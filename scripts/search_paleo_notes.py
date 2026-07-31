@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Search local D-Lab Paleo Markdown notes with date-aware ranking."""
+"""Search local D-Lab Paleo Markdown articles with date-aware ranking."""
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ class SearchResult:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Search local D-Lab Paleo Markdown notes.")
+    parser = argparse.ArgumentParser(description="Search local D-Lab Paleo Markdown articles.")
     parser.add_argument("terms", nargs="+", help="Search term(s). Multiple terms are OR-ranked.")
     parser.add_argument("--limit", type=int, default=DEFAULT_LIMIT, help="Maximum results to print.")
     parser.add_argument("--from-date", dest="from_date", help="Earliest article date, YYYY-MM-DD.")
@@ -76,7 +76,9 @@ def extract_headings(text: str) -> str:
 
 
 def build_snippet(text: str, terms: list[str], width: int = 130) -> str:
-    flat = normalize(re.sub(r"^---.*?---", "", text, flags=re.S))
+    body = re.sub(r"^---.*?---", "", text, count=1, flags=re.S)
+    body = re.sub(r"!\[[^\]]*\]\([^)]+\)", "", body)
+    flat = normalize(body)
     folded = fold(flat)
     folded_terms = [fold(term) for term in terms]
     positions = [folded.find(term) for term in folded_terms if term and folded.find(term) >= 0]

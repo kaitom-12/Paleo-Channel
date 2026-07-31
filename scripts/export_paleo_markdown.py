@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Export D-Lab Paleo articles into derivative Markdown notes.
+"""Export D-Lab Paleo articles into structure-preserving Markdown.
 
-The exporter is intentionally note-oriented and does not copy full articles.
+Verified authenticated HTML is preferred when available. The Algolia search
+index remains the fallback, and the exporter never invents missing content.
 """
 
 from __future__ import annotations
@@ -20,6 +21,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+try:
+    from lxml import html as lxml_html
+except ImportError:  # pragma: no cover - stdlib fallback remains available
+    lxml_html = None
+
 
 APP_ID = "PD3UJWKGZD"
 API_KEY = (
@@ -36,15 +42,8 @@ PALEO = "\u30d1\u30ec\u30aa"
 ARTICLE = "\u8a18\u4e8b"
 SOURCE_TYPE_DLAB = "D\u30e9\u30dc\u5185\u8a18\u4e8b"
 SOURCE_TYPE_BLOG = "\u30d1\u30ec\u30aa\u306a\u7537\u30d6\u30ed\u30b0\u7531\u6765"
-
-SEC_HEADINGS = "## \u5168\u898b\u51fa\u3057"
-SEC_CLAIM = "## \u8a18\u4e8b\u306e\u4e3b\u5f35"
-SEC_DETAIL_BY_HEADING = "## \u898b\u51fa\u3057\u3054\u3068\u306e\u8a73\u7d30\u30e1\u30e2"
-SEC_DETAIL = "## \u8a73\u7d30\u30e1\u30e2"
-SEC_EXAMPLES = "## \u8a18\u4e8b\u5185\u306e\u4f8b\u30fb\u30c1\u30a7\u30c3\u30af\u9805\u76ee"
-SEC_STEPS = "## \u5b9f\u8df5\u624b\u9806"
-SEC_TERMS = "## \u7528\u8a9e\u30fb\u30d5\u30ec\u30fc\u30e0\u30ef\u30fc\u30af"
-SEC_SELF = "## \u81ea\u5206\u7528\u30e1\u30e2"
+CONTENT_SOURCE_INDEX = "D\u30e9\u30dc\u691c\u7d22\u7d22\u5f15"
+CONTENT_SOURCE_AUTHENTICATED = "D\u30e9\u30dc\u8a8d\u8a3c\u6e08\u307f\u672c\u6587"
 
 
 @dataclass
@@ -55,12 +54,7 @@ class Article:
     regist_ms: int
     channel_owner: str
     origin: str | None
-
-
-@dataclass
-class Section:
-    heading: str
-    blocks: list[str]
+    thumbnail_url: str | None
 
 
 def algolia_query(params: str) -> dict:
@@ -89,7 +83,15 @@ def query_page(page: int, hits_per_page: int, extra_filter: str | None = None) -
         "page": str(page),
         "filters": filters,
         "attributesToRetrieve": json.dumps(
-            ["title", "body", "blog_regist_time", "channel_owner", "origin", "objectID"],
+            [
+                "title",
+                "body",
+                "blog_regist_time",
+                "channel_owner",
+                "origin",
+                "thumbnail_url",
+                "objectID",
+            ],
             ensure_ascii=False,
         ),
     }
@@ -163,6 +165,7 @@ def article_from_hit(hit: dict) -> Article:
         regist_ms=int(hit.get("blog_regist_time") or hit.get("create_time") or 0),
         channel_owner=str(hit.get("channel_owner") or "paleo"),
         origin=hit.get("origin") or None,
+        thumbnail_url=hit.get("thumbnail_url") or None,
     )
 
 
@@ -234,106 +237,8 @@ def strong_single_heading(heading: str) -> bool:
     )
 
 
-def parse_sections(text: str) -> tuple[list[str], list[Section], list[str]]:
-    preface: list[str] = []
-    sections: list[Section] = []
-    current: Section | None = None
-    for block in split_blocks(text):
-        if is_heading(block):
-            current = Section(normalize_space(block), [])
-            sections.append(current)
-        elif current is None:
-            preface.append(block)
-        else:
-            current.blocks.append(block)
-    return [s.heading for s in sections], sections, preface
-
-
-def split_sentences(text: str) -> list[str]:
-    text = normalize_space(text)
-    parts = re.split(r"(?<=[。！？!?])", text)
-    return [p.strip() for p in parts if len(p.strip()) >= 12]
-
-
-def score_sentence(sentence: str) -> int:
-    keywords = ["重要", "ポイント", "結論", "つまり", "理由", "研究", "結果", "具体", "例えば", "たとえば", "注意", "改善", "チェック", "方法", "効果", "問題", "必要"]
-    return sum(2 for k in keywords if k in sentence) + min(len(sentence) // 80, 3)
-
-
-def note_phrase(sentence: str, max_len: int = 130) -> str:
-    s = normalize_space(sentence)
-    s = re.sub(r"^[・\-*]\s*", "", s).strip("「」")
-    s = re.sub(r"。$", "", s)
-    if len(s) > max_len:
-        return s[: max_len - 1].rstrip("、。,. ") + "..."
-    return s
-
-
-def top_notes(blocks: list[str], limit: int) -> list[str]:
-    sentences: list[str] = []
-    for block in blocks:
-        if len(block) < 140:
-            sentences.append(block)
-        else:
-            sentences.extend(split_sentences(block))
-    ranked = sorted(enumerate(sentences), key=lambda x: (-score_sentence(x[1]), x[0]))
-    notes: list[str] = []
-    seen: set[str] = set()
-    for _, sentence in ranked:
-        phrase = note_phrase(sentence)
-        key = phrase[:44]
-        if len(phrase) < 18 or key in seen:
-            continue
-        seen.add(key)
-        notes.append(phrase)
-        if len(notes) >= limit:
-            break
-    return notes
-
-
-def collect_examples(text: str, limit: int = 40) -> list[str]:
-    examples: list[str] = []
-    for block in split_blocks(text):
-        s = normalize_space(block)
-        if any(k in s for k in ["たとえば", "例えば", "チェック", "□", "→", "：", ":", "ステップ", "ポイント"]):
-            phrase = note_phrase(s, 135)
-            if 8 <= len(phrase) <= 140:
-                examples.append(phrase)
-    out: list[str] = []
-    seen: set[str] = set()
-    for ex in examples:
-        key = ex[:45]
-        if key not in seen:
-            seen.add(key)
-            out.append(ex)
-        if len(out) >= limit:
-            break
-    return out
-
-
-FRAMEWORKS = [
-    "COM-B",
-    "Theory of Constraints",
-    "EPA",
-    "DHA",
-    "GLP-1",
-    "NOVA",
-    "HIIT",
-    "CBT",
-    "感情スキーマ",
-    "ミトコンドリア",
-    "細胞エネルギー",
-    "体内時計",
-]
-
-
-def collect_terms(text: str, title: str) -> list[str]:
-    haystack = f"{title}\n{text}"
-    terms = [term for term in FRAMEWORKS if term in haystack]
-    for term in re.findall(r"\b[A-Z][A-Za-z0-9+\-]{2,}\b", haystack):
-        if term not in terms:
-            terms.append(term)
-    return terms[:20]
+def extract_headings(text: str) -> list[str]:
+    return [normalize_space(block) for block in split_blocks(text) if is_heading(block)]
 
 
 def date_parts(ms: int) -> tuple[str, str]:
@@ -357,14 +262,303 @@ def yaml_quote(value: str) -> str:
     return json.dumps(value, ensure_ascii=False)
 
 
-def build_markdown(article: Article, headings: list[str], sections: list[Section], preface: list[str]) -> str:
-    cleaned = clean_body(article.body)
+def _fallback_source_body_to_markdown(body: str) -> str:
+    """Preserve the indexed source text with only light Markdown conversion."""
+    text = html.unescape(body or "")
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+
+    def anchor_to_markdown(match: re.Match[str]) -> str:
+        href = match.group(1).strip()
+        label = re.sub(r"<[^>]+>", "", match.group(2)).strip() or href
+        return f"[{label}]({href})"
+
+    def image_to_markdown(match: re.Match[str]) -> str:
+        attrs = match.group(1)
+        src_match = re.search(r"\bsrc=[\"']([^\"']+)[\"']", attrs, flags=re.I)
+        if not src_match:
+            return ""
+        alt_match = re.search(r"\balt=[\"']([^\"']*)[\"']", attrs, flags=re.I)
+        alt = alt_match.group(1).strip() if alt_match else "記事内画像"
+        return f"\n\n![{alt}]({src_match.group(1).strip()})\n\n"
+
+    text = re.sub(
+        r"<a\b[^>]*href=[\"']([^\"']+)[\"'][^>]*>(.*?)</a>",
+        anchor_to_markdown,
+        text,
+        flags=re.I | re.S,
+    )
+    text = re.sub(r"<img\b([^>]*)>", image_to_markdown, text, flags=re.I | re.S)
+    for level in range(1, 7):
+        text = re.sub(
+            rf"<h{level}\b[^>]*>(.*?)</h{level}>",
+            lambda match, level=level: (
+                f"\n\n{'#' * min(level + 1, 6)} "
+                f"{re.sub(r'<[^>]+>', '', match.group(1)).strip()}\n\n"
+            ),
+            text,
+            flags=re.I | re.S,
+        )
+    text = re.sub(
+        r"<li\b[^>]*>(.*?)</li>",
+        lambda match: f"\n- {re.sub(r'<[^>]+>', '', match.group(1)).strip()}",
+        text,
+        flags=re.I | re.S,
+    )
+    text = re.sub(r"<br\s*/?>", "\n", text, flags=re.I)
+    text = re.sub(r"</(?:p|div|ul|ol|blockquote)>", "\n\n", text, flags=re.I)
+    text = re.sub(r"<[^>]+>", "", text)
+
+    rendered_blocks: list[str] = []
+    current_block: list[str] = []
+    blank_run = 0
+
+    def flush_block() -> None:
+        if not current_block:
+            return
+        rendered_blocks.append("\\\n".join(current_block))
+        current_block.clear()
+
+    for raw_line in text.split("\n"):
+        line = raw_line.replace("\u00a0", " ").strip()
+        if not line:
+            flush_block()
+            blank_run += 1
+            continue
+
+        explicit_markdown_heading = bool(re.match(r"^#{1,6}\s+", line))
+        inferred_heading = (
+            not explicit_markdown_heading
+            and len(line) <= 120
+            and blank_run >= 3
+        )
+        if inferred_heading:
+            flush_block()
+            rendered_blocks.append(f"## {line}")
+        elif explicit_markdown_heading:
+            flush_block()
+            rendered_blocks.append(line)
+        else:
+            current_block.append(line)
+        blank_run = 0
+
+    flush_block()
+    return "\n\n".join(block for block in rendered_blocks if block).strip()
+
+
+def _tag_name(node: object) -> str:
+    tag = getattr(node, "tag", "")
+    if not isinstance(tag, str):
+        return ""
+    return tag.rsplit("}", 1)[-1].lower()
+
+
+def _escape_markdown_text(value: str | None) -> str:
+    text = html.unescape(value or "").replace("\u00a0", " ").replace("\u3000", " ")
+    text = re.sub(r"\s+", " ", text)
+    return re.sub(r"([\\`*_\[\]])", r"\\\1", text)
+
+
+def _clean_inline(value: str) -> str:
+    lines = [re.sub(r"[ \t]+", " ", line).strip() for line in value.splitlines()]
+    return "\n".join(line for line in lines if line).strip()
+
+
+def _safe_markdown_url(value: str | None, *, image: bool = False) -> str:
+    url = html.unescape(value or "").strip()
+    if not url or re.match(r"(?i)^(?:javascript|vbscript):", url):
+        return ""
+    if image and re.match(r"(?i)^data:", url):
+        return ""
+    return url.replace(" ", "%20").replace("(", "%28").replace(")", "%29")
+
+
+def _render_inline_children(node: object, *, skip_lists: bool = False) -> str:
+    parts = [_escape_markdown_text(getattr(node, "text", None))]
+    for child in node:
+        tag = _tag_name(child)
+        if skip_lists and tag in {"ul", "ol"}:
+            pass
+        else:
+            parts.append(_render_inline_node(child))
+        parts.append(_escape_markdown_text(getattr(child, "tail", None)))
+    return _clean_inline("".join(parts))
+
+
+def _render_inline_node(node: object) -> str:
+    tag = _tag_name(node)
+    inner = _render_inline_children(node)
+
+    if tag == "br":
+        return "\n"
+    if tag == "img":
+        src = _safe_markdown_url(getattr(node, "get")("src"), image=True)
+        if not src:
+            return ""
+        alt = _escape_markdown_text(getattr(node, "get")("alt") or "記事内画像")
+        return f"![{alt}]({src})"
+    if tag == "a":
+        href = _safe_markdown_url(getattr(node, "get")("href"))
+        label = inner or _escape_markdown_text(href)
+        return f"[{label}]({href})" if href else label
+    if tag in {"strong", "b"}:
+        return f"**{inner}**" if inner else ""
+    if tag in {"em", "i"}:
+        return f"*{inner}*" if inner else ""
+    if tag == "del":
+        return f"~~{inner}~~" if inner else ""
+    if tag == "code":
+        fence = "``" if "`" in inner else "`"
+        return f"{fence}{inner}{fence}" if inner else ""
+    return inner
+
+
+def _render_list(node: object, depth: int = 0) -> str:
+    ordered = _tag_name(node) == "ol"
+    try:
+        start = int(getattr(node, "get")("start") or 1)
+    except (TypeError, ValueError):
+        start = 1
+
+    lines: list[str] = []
+    item_index = 0
+    for item in node:
+        if _tag_name(item) != "li":
+            continue
+        marker = f"{start + item_index}. " if ordered else "- "
+        item_index += 1
+        inline = _render_inline_children(item, skip_lists=True)
+        inline_lines = inline.splitlines() or [""]
+        indent = "  " * depth
+        lines.append(f"{indent}{marker}{inline_lines[0]}".rstrip())
+        continuation = indent + " " * len(marker)
+        lines.extend(f"{continuation}{line}".rstrip() for line in inline_lines[1:])
+        for child in item:
+            if _tag_name(child) in {"ul", "ol"}:
+                nested = _render_list(child, depth + 1)
+                if nested:
+                    lines.append(nested)
+    return "\n".join(lines)
+
+
+def _render_blockquote(node: object) -> str:
+    body = _render_container(node).strip()
+    if not body:
+        return ""
+    quoted = "\n".join("> " + line if line else ">" for line in body.splitlines())
+    return f"{quoted}\n\n"
+
+
+def _render_block_node(node: object) -> str:
+    tag = _tag_name(node)
+
+    if tag in {"h1", "h2", "h3", "h4", "h5", "h6"}:
+        level = min(int(tag[1]) + 1, 6)
+        title = _render_inline_children(node)
+        return f"{'#' * level} {title}\n\n" if title else ""
+    if tag == "p":
+        body = _render_inline_children(node)
+        return f"{body}\n\n" if body else ""
+    if tag in {"ul", "ol"}:
+        body = _render_list(node)
+        return f"{body}\n\n" if body else ""
+    if tag == "blockquote":
+        return _render_blockquote(node)
+    if tag == "hr":
+        return "---\n\n"
+    if tag == "pre":
+        code = "".join(getattr(node, "itertext")()).strip("\n")
+        if not code:
+            return ""
+        fence = "````" if "```" in code else "```"
+        return f"{fence}\n{code}\n{fence}\n\n"
+    if tag == "table" and lxml_html is not None:
+        return f"{lxml_html.tostring(node, encoding='unicode', method='html').strip()}\n\n"
+    if tag in {"div", "section", "article", "figure", "figcaption", "main"}:
+        return _render_container(node)
+    if tag == "img":
+        body = _render_inline_node(node)
+        return f"{body}\n\n" if body else ""
+
+    body = _render_inline_node(node)
+    return f"{body}\n\n" if body else ""
+
+
+def _render_container(node: object) -> str:
+    parts: list[str] = []
+    leading = _escape_markdown_text(getattr(node, "text", None)).strip()
+    if leading:
+        parts.append(f"{leading}\n\n")
+    for child in node:
+        parts.append(_render_block_node(child))
+        tail = _escape_markdown_text(getattr(child, "tail", None)).strip()
+        if tail:
+            parts.append(f"{tail}\n\n")
+    return "".join(parts)
+
+
+def source_body_to_markdown(body: str) -> str:
+    """Convert source rich HTML to readable Markdown while preserving structure."""
+    if not body:
+        return ""
+    if lxml_html is None or not re.search(r"</?[a-z][^>]*>", body, flags=re.I):
+        return _fallback_source_body_to_markdown(body)
+    try:
+        root = lxml_html.fragment_fromstring(body, create_parent="div")
+        rendered = _render_container(root)
+    except (ValueError, TypeError):
+        return _fallback_source_body_to_markdown(body)
+
+    rendered = rendered.replace("\r\n", "\n").replace("\r", "\n")
+    rendered = re.sub(r"[ \t]+\n", "\n", rendered)
+    rendered = re.sub(r"\n{3,}", "\n\n", rendered)
+    return rendered.strip()
+
+
+def load_authenticated_bodies(path: Path) -> dict[str, str]:
+    """Load the latest verified full-body HTML record for each article."""
+    if not path.exists():
+        return {}
+
+    bodies: dict[str, str] = {}
+    with path.open("r", encoding="utf-8") as f:
+        for line_number, raw_line in enumerate(f, 1):
+            line = raw_line.strip()
+            if not line:
+                continue
+            try:
+                record = json.loads(line)
+            except json.JSONDecodeError as exc:
+                print(
+                    f"warning: invalid authenticated body cache line "
+                    f"{line_number}: {exc}",
+                    file=sys.stderr,
+                )
+                continue
+            object_id = str(record.get("object_id") or "")
+            page_id = str(record.get("page_id") or "")
+            body_html = record.get("html")
+            if record.get("status") != "ok" or not object_id or not isinstance(body_html, str):
+                continue
+            if page_id and page_id != object_id:
+                print(
+                    f"warning: authenticated body ID mismatch: "
+                    f"object_id={object_id} page_id={page_id}",
+                    file=sys.stderr,
+                )
+                continue
+            bodies[object_id] = body_html
+    return bodies
+
+
+def build_markdown(article: Article, authenticated_html: str | None = None) -> str:
     date_full, _ = date_parts(article.regist_ms)
     url = f"https://daigovideolab.jp/blog/{article.object_id}"
-    examples = collect_examples(cleaned)
-    terms = collect_terms(cleaned, article.title)
-    preface_notes = top_notes(preface or [cleaned], 7)
     source_type = SOURCE_TYPE_BLOG if article.origin else SOURCE_TYPE_DLAB
+    source_body = source_body_to_markdown(authenticated_html or article.body)
+    content_source = (
+        CONTENT_SOURCE_AUTHENTICATED if authenticated_html is not None else CONTENT_SOURCE_INDEX
+    )
+    content_completeness = "full" if authenticated_html is not None else "unknown"
 
     lines = [
         "---",
@@ -376,56 +570,24 @@ def build_markdown(article: Article, headings: list[str], sections: list[Section
         f"object_id: {yaml_quote(article.object_id)}",
         f"origin: {yaml_quote(article.origin) if article.origin else 'null'}",
         f"source_type: {yaml_quote(source_type)}",
+        (
+            f"thumbnail_url: {yaml_quote(article.thumbnail_url)}"
+            if article.thumbnail_url
+            else "thumbnail_url: null"
+        ),
+        f"content_source: {yaml_quote(content_source)}",
+        f"content_completeness: {yaml_quote(content_completeness)}",
         "---",
         "",
         f"# {article.title}",
         "",
-        SEC_HEADINGS,
-        "",
     ]
-    lines.extend([f"- {h}" for h in headings] if headings else ["- 明確な見出し構造なし"])
-    lines.extend(["", SEC_CLAIM, ""])
-    lines.append(f"この記事は「{article.title}」をテーマに、本文の主張・例・実践ポイントを整理したノート。")
-    if preface_notes:
-        lines.append("")
-        lines.extend(f"- {note}" for note in preface_notes)
-
-    if sections:
-        lines.extend(["", SEC_DETAIL_BY_HEADING, ""])
-        for section in sections:
-            lines.extend([f"### {section.heading}", ""])
-            notes = top_notes(section.blocks, 8)
-            lines.extend(f"- {note}" for note in notes) if notes else lines.append("- この見出しは短い区切りとして扱う。")
-            lines.append("")
-    else:
-        lines.extend(["", SEC_DETAIL, ""])
-        notes = top_notes([cleaned], 16)
-        lines.extend(f"- {note}" for note in notes)
-
-    lines.extend(["", SEC_EXAMPLES, ""])
-    lines.extend(f"- {ex}" for ex in examples) if examples else lines.append("- 明確な例・チェック項目は少なめ。")
-
-    lines.extend(["", SEC_STEPS, ""])
-    practical = [h for h in headings if re.search(r"(ステップ|ワーク|チェック|実践|改善|判定|ポイント|方法)", h)]
-    if practical:
-        for idx, item in enumerate(practical[:12], 1):
-            lines.append(f"{idx}. {item}を自分の生活や課題に当てはめて確認する。")
-    else:
-        for idx, note in enumerate(top_notes([cleaned], 6), 1):
-            lines.append(f"{idx}. {note}という観点で、自分の状況を見直す。")
-
-    lines.extend(["", SEC_TERMS, ""])
-    lines.extend(f"- {term}" for term in terms) if terms else lines.append("- 主要な専門用語は本文メモ内で確認する。")
-
-    lines.extend(["", SEC_SELF, ""])
-    lines.extend(
-        [
-            "- 後で見返すときは、記事の主張、詳細メモ、実践手順の順に読む。",
-            "- このノートは原文の代替ではなく、復習と検索のための言い換えメモとして扱う。",
-            "- 判断に使う場合は、URL先で原文と研究リンクを確認する。",
-            "",
-        ]
-    )
+    if article.thumbnail_url and (
+        authenticated_html is None
+        or article.thumbnail_url not in html.unescape(authenticated_html)
+    ):
+        lines.extend([f"![記事サムネイル]({article.thumbnail_url})", ""])
+    lines.extend([source_body or "*取得できる本文なし*", ""])
     return "\n".join(lines)
 
 
@@ -440,7 +602,14 @@ def reset_outputs(out_dir: Path, state_dir: Path) -> None:
             path.unlink()
 
 
-def write_outputs(records: list[Article], out_dir: Path, state_dir: Path, overwrite: bool, origin_null_only: bool) -> dict:
+def write_outputs(
+    records: list[Article],
+    out_dir: Path,
+    state_dir: Path,
+    overwrite: bool,
+    origin_null_only: bool,
+    authenticated_bodies: dict[str, str],
+) -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
     state_dir.mkdir(parents=True, exist_ok=True)
     existing_names = {p.name for p in out_dir.glob("*.md")}
@@ -451,6 +620,7 @@ def write_outputs(records: list[Article], out_dir: Path, state_dir: Path, overwr
     for idx, article in enumerate(records, 1):
         try:
             source_type = SOURCE_TYPE_BLOG if article.origin else SOURCE_TYPE_DLAB
+            authenticated_html = authenticated_bodies.get(article.object_id)
             if origin_null_only and article.origin:
                 skipped += 1
                 skip_rows.append(
@@ -464,8 +634,8 @@ def write_outputs(records: list[Article], out_dir: Path, state_dir: Path, overwr
                 )
                 continue
 
-            cleaned = clean_body(article.body)
-            headings, sections, preface = parse_sections(cleaned)
+            cleaned = clean_body(authenticated_html or article.body)
+            headings = extract_headings(cleaned)
             if (not origin_null_only) and (not headings or (len(headings) == 1 and not strong_single_heading(headings[0]))):
                 skipped += 1
                 skip_rows.append(
@@ -495,7 +665,7 @@ def write_outputs(records: list[Article], out_dir: Path, state_dir: Path, overwr
                 )
                 continue
 
-            markdown = build_markdown(article, headings, sections, preface)
+            markdown = build_markdown(article, authenticated_html)
             path.write_text(markdown, encoding="utf-8", newline="\n")
             created += 1
             manifest_rows.append(
@@ -509,6 +679,16 @@ def write_outputs(records: list[Article], out_dir: Path, state_dir: Path, overwr
                     "bytes": len(markdown.encode("utf-8")),
                     "origin": article.origin or "",
                     "source_type": source_type,
+                    "thumbnail_url": article.thumbnail_url or "",
+                    "content_source": (
+                        CONTENT_SOURCE_AUTHENTICATED
+                        if authenticated_html is not None
+                        else CONTENT_SOURCE_INDEX
+                    ),
+                    "content_completeness": (
+                        "full" if authenticated_html is not None else "unknown"
+                    ),
+                    "body_chars": len(cleaned),
                 }
             )
         except Exception as exc:  # noqa: BLE001
@@ -527,7 +707,21 @@ def write_outputs(records: list[Article], out_dir: Path, state_dir: Path, overwr
 
     manifest_path = state_dir / "manifest.csv"
     with manifest_path.open("w", encoding="utf-8-sig", newline="") as f:
-        fields = ["object_id", "title", "date", "url", "file", "headings", "bytes", "origin", "source_type"]
+        fields = [
+            "object_id",
+            "title",
+            "date",
+            "url",
+            "file",
+            "headings",
+            "bytes",
+            "origin",
+            "source_type",
+            "thumbnail_url",
+            "content_source",
+            "content_completeness",
+            "body_chars",
+        ]
         writer = csv.DictWriter(f, fieldnames=fields)
         writer.writeheader()
         writer.writerows(manifest_rows)
@@ -544,6 +738,7 @@ def write_outputs(records: list[Article], out_dir: Path, state_dir: Path, overwr
         "created": created,
         "skipped": skipped,
         "errors": errors,
+        "authenticated_bodies": len(authenticated_bodies),
         "manifest": str(manifest_path),
         "skipped_file": str(skipped_path),
         "updated_at": datetime.now(JST).isoformat(),
@@ -561,16 +756,35 @@ def main() -> int:
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--reset-out-dir", action="store_true")
     parser.add_argument("--origin-null-only", action="store_true")
+    parser.add_argument(
+        "--authenticated-bodies",
+        default=None,
+        help="JSONL cache of verified authenticated article-body HTML",
+    )
     args = parser.parse_args()
 
     out_dir = Path(args.out_dir)
     state_dir = Path(args.state_dir)
+    authenticated_body_path = (
+        Path(args.authenticated_bodies)
+        if args.authenticated_bodies
+        else state_dir / "authenticated_bodies.jsonl"
+    )
     if args.reset_out_dir:
         reset_outputs(out_dir, state_dir)
 
     records = fetch_recent(args.latest) if args.latest else fetch_all(args.max_records)
+    authenticated_bodies = load_authenticated_bodies(authenticated_body_path)
     print(f"fetched={len(records)}")
-    progress = write_outputs(records, out_dir, state_dir, args.overwrite, args.origin_null_only)
+    print(f"authenticated_bodies={len(authenticated_bodies)}")
+    progress = write_outputs(
+        records,
+        out_dir,
+        state_dir,
+        args.overwrite,
+        args.origin_null_only,
+        authenticated_bodies,
+    )
     print(json.dumps(progress, ensure_ascii=False, indent=2))
     return 0
 
