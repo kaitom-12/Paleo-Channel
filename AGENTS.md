@@ -14,11 +14,15 @@
 
 ## ローカルファイル優先ルール
 
-- このワークスペースで回答するときは、まず `C:\Users\p9u38\Documents\Paleo Channel` 内のローカルファイルを根拠にできるか確認する。
-- 主な確認対象は `articles/` と `export_state/manifest.csv`。
-- 健康、心理、栄養、運動、睡眠、習慣、生産性、D-Lab Paleo 記事に関係する相談では、`dlab-paleo-research` スキルを使い、ローカル記事検索を優先する。
+- このワークスペースで回答するときは、まず `C:\Users\塩見春奈\Documents\Paleo-Channel` 内のローカルファイルを根拠にできるか確認する。
+- 主な確認対象は `articles/`、`video_chapters/`、`export_state/manifest.csv`、`export_state/video_chapters_manifest.csv`。
+- 健康、心理、栄養、運動、睡眠、習慣、生産性、D-Lab Paleo 記事・動画に関係する相談では、`dlab-paleo-research` スキルを使い、ローカル検索を優先する。
 - 関係がありそうな質問では、回答前に `scripts\search_paleo_notes.py` や `rg` で関連ファイルを検索する。
+- コンテンツを最新化するときは、記事の更新後に `scripts\export_paleo_video_chapters.py --reset-out-dir` も実行する。
 - ローカルファイルを根拠にした場合は、記事タイトル、日付、URL、ローカルファイルパスを必要に応じて示す。
+- 動画チャプターは、記事より信頼度が低い補助資料として扱う。
+- 動画チャプターは逐語録ではなく、AI 生成を含む要約。パレオ本人の正確な発言として引用・断定しない。
+- 動画チャプターを根拠に使う場合は「動画チャプターの参考情報」と明記し、重要な主張は元動画の該当時刻または記事・外部資料で確認する。
 - ローカルファイルに根拠が見つからない場合は、「ローカル根拠は見つからない」と明記する。
 - 明らかに Paleo Channel の記事群と関係ない質問では、無理に検索せず「対象外の質問」と端的に答える。
 - ローカル根拠、外部情報、推測を混ぜて断定しない。

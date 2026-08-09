@@ -1,10 +1,10 @@
 {
-  "records": 8719,
-  "created": 1443,
-  "skipped": 7276,
+  "records": 8736,
+  "created": 1448,
+  "skipped": 7288,
   "errors": 0,
-  "authenticated_bodies": 305,
+  "authenticated_bodies": 311,
   "manifest": "export_state\\manifest.csv",
   "skipped_file": "export_state\\skipped.csv",
-  "updated_at": "2026-07-29T21:01:54.144189+09:00"
+  "updated_at": "2026-08-09T21:28:39.435218+09:00"
 }

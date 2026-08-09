@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Search local D-Lab Paleo Markdown articles with date-aware ranking."""
+"""Search local D-Lab Paleo articles and video-chapter reference notes."""
 
 from __future__ import annotations
 
@@ -24,14 +24,24 @@ class SearchResult:
     url: str
     file: Path
     snippet: str
+    note_kind: str
+    reliability: str
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Search local D-Lab Paleo Markdown articles.")
+    parser = argparse.ArgumentParser(
+        description="Search local D-Lab Paleo articles and video chapters."
+    )
     parser.add_argument("terms", nargs="+", help="Search term(s). Multiple terms are OR-ranked.")
     parser.add_argument("--limit", type=int, default=DEFAULT_LIMIT, help="Maximum results to print.")
-    parser.add_argument("--from-date", dest="from_date", help="Earliest article date, YYYY-MM-DD.")
-    parser.add_argument("--to-date", dest="to_date", help="Latest article date, YYYY-MM-DD.")
+    parser.add_argument("--from-date", dest="from_date", help="Earliest note date, YYYY-MM-DD.")
+    parser.add_argument("--to-date", dest="to_date", help="Latest note date, YYYY-MM-DD.")
+    parser.add_argument(
+        "--source",
+        choices=["all", "articles", "video-chapters"],
+        default="all",
+        help="Source notes to search. Video chapters are non-verbatim reference summaries.",
+    )
     parser.add_argument("--root", default=".", help="Paleo Channel repository root.")
     return parser.parse_args()
 
@@ -54,12 +64,25 @@ def fold(text: str) -> str:
     return unicodedata.normalize("NFKC", text or "").lower()
 
 
-def load_manifest(root: Path) -> list[dict[str, str]]:
-    manifest = root / "export_state" / "manifest.csv"
-    if not manifest.exists():
-        raise FileNotFoundError(f"manifest not found: {manifest}")
-    with manifest.open("r", encoding="utf-8-sig", newline="") as handle:
+def load_manifest(path: Path) -> list[dict[str, str]]:
+    if not path.exists():
+        raise FileNotFoundError(f"manifest not found: {path}")
+    with path.open("r", encoding="utf-8-sig", newline="") as handle:
         return list(csv.DictReader(handle))
+
+
+def load_sources(root: Path, source: str) -> list[tuple[str, dict[str, str]]]:
+    rows: list[tuple[str, dict[str, str]]] = []
+    if source in {"all", "articles"}:
+        article_manifest = root / "export_state" / "manifest.csv"
+        rows.extend(("article", row) for row in load_manifest(article_manifest))
+    if source in {"all", "video-chapters"}:
+        video_manifest = root / "export_state" / "video_chapters_manifest.csv"
+        if video_manifest.exists():
+            rows.extend(("video_chapter", row) for row in load_manifest(video_manifest))
+        elif source == "video-chapters":
+            raise FileNotFoundError(f"manifest not found: {video_manifest}")
+    return rows
 
 
 def read_note(root: Path, file_value: str) -> str:
@@ -121,14 +144,22 @@ def in_date_range(date: datetime, from_date: datetime | None, to_date: datetime 
     return True
 
 
-def search(root: Path, terms: list[str], limit: int, from_date: datetime | None, to_date: datetime | None) -> list[SearchResult]:
-    rows = load_manifest(root)
+def search(
+    root: Path,
+    terms: list[str],
+    limit: int,
+    from_date: datetime | None,
+    to_date: datetime | None,
+    source: str = "all",
+) -> list[SearchResult]:
+    rows = load_sources(root, source)
     results: list[SearchResult] = []
-    for row in rows:
-        if (row.get("origin") or "").strip():
-            continue
-        if (row.get("source_type") or "").strip() not in {"", "Dラボ内記事"}:
-            continue
+    for note_kind, row in rows:
+        if note_kind == "article":
+            if (row.get("origin") or "").strip():
+                continue
+            if (row.get("source_type") or "").strip() not in {"", "Dラボ内記事"}:
+                continue
         date = parse_date(row.get("date", ""))
         if not in_date_range(date, from_date, to_date):
             continue
@@ -142,6 +173,8 @@ def search(root: Path, terms: list[str], limit: int, from_date: datetime | None,
         title = row.get("title") or ""
         headings = extract_headings(text)
         score = score_text(title, headings, text, terms)
+        if note_kind == "video_chapter":
+            score *= 0.6
         if score <= 0:
             continue
         results.append(
@@ -152,6 +185,12 @@ def search(root: Path, terms: list[str], limit: int, from_date: datetime | None,
                 url=row.get("url") or "",
                 file=(root / file_value.replace("\\", "/")).resolve(),
                 snippet=build_snippet(text, terms),
+                note_kind=note_kind,
+                reliability=(
+                    row.get("reliability") or "reference_only"
+                    if note_kind == "video_chapter"
+                    else "article"
+                ),
             )
         )
     results.sort(key=lambda item: (item.score, item.date), reverse=True)
@@ -164,7 +203,8 @@ def print_results(results: list[SearchResult]) -> None:
         return
     for idx, item in enumerate(results, 1):
         date = item.date.strftime("%Y-%m-%d") if item.date != datetime.min else "unknown-date"
-        print(f"{idx}. [{date}] score={item.score:.1f} {item.title}")
+        source_label = "動画チャプター・参考／非逐語" if item.note_kind == "video_chapter" else "記事"
+        print(f"{idx}. [{date}] [{source_label}] score={item.score:.1f} {item.title}")
         print(f"   url: {item.url}")
         print(f"   file: {item.file}")
         print(f"   snippet: {item.snippet}")
@@ -180,7 +220,7 @@ def main() -> int:
     if not terms:
         print("At least one search term is required.", file=sys.stderr)
         return 2
-    results = search(root, terms, max(args.limit, 1), from_date, to_date)
+    results = search(root, terms, max(args.limit, 1), from_date, to_date, args.source)
     print_results(results)
     return 0
 

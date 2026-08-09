@@ -1,0 +1,12 @@
+{
+  "records": 177,
+  "exported": 177,
+  "created": 177,
+  "updated": 0,
+  "unchanged": 0,
+  "skipped": 0,
+  "errors": 0,
+  "manifest": "export_state\\video_chapters_manifest.csv",
+  "errors_file": "export_state\\video_chapters_errors.csv",
+  "updated_at": "2026-08-09T21:47:24.205212+09:00"
+}
