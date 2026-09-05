@@ -1,0 +1,514 @@
+<p>&nbsp;<img src="https://firebasestorage.googleapis.com/v0/b/daigovideoapp-d658e.appspot.com/o/blogs%2Fpaleo%2F2233489%2F1_f6005547abbfd67dbedea8eda292af643c7bba05.png.png?alt=media&amp;token=808bfeac-defd-4ba1-9f06-a6178419fbf5" data-image_id="956254" alt="f6005547abbfd67dbedea8eda292af643c7bba05.png"></p>
+<p>&nbsp;</p>
+<p>「<strong>AI時代に必要なのは『ケンタウロス思考』だ！</strong>」の続きです！(<a href="https://daigovideolab.jp/blog/2231172" target="_blank" rel="noopener noreferrer" style="color: rgb(63, 198, 255);">#1</a>,<a href="https://daigovideolab.jp/blog/2232238" target="_blank" rel="noopener noreferrer" style="color: rgb(63, 198, 255);">#2</a>,<a href="https://daigovideolab.jp/blog/2232464" target="_blank" rel="noopener noreferrer" style="color: rgb(63, 198, 255);">#3</a>,<a href="https://daigovideolab.jp/blog/2233033" target="_blank" rel="noopener noreferrer" style="color: rgb(63, 198, 255);">#4</a>,<a href="https://daigovideolab.jp/blog/2233303" target="_blank" rel="noopener noreferrer" style="color: rgb(63, 198, 255);">#5</a>)</p>
+<p>&nbsp;</p>
+<p>このシリーズでは、みんな大好きサイエンス誌に掲載された最新のレビュー論文をもとに、AIを単なる便利ツールとして使うのではなく、人間の思考を拡張する「<span style="color: rgb(255, 255, 0);"><strong>チームメンバー</strong></span>」として扱うための実践法を考えていきます。AI時代に私たちが鍛えるべきなのは「AIに正解を出させる力」ではなく、「AIと一緒に考える力」なのではないか？というのが、このシリーズの大きなテーマであります。</p>
+<p>&nbsp;</p>
+<p>そのために、このシリーズでは、実際にAIとどう向き合えばいいのかを、単なるプロンプト術ではなく、手を動かしながら考えていくことにしております。ということで今回は、さらに「<span style="color: rgb(255, 255, 0);"><strong>AIを検証する</strong></span>」ワークをやってみましょう！</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h1 id="b4148fa7-fe26-479a-978d-7086bbef1cad"><strong>今日鍛える能力：批判的検証力</strong></h1>
+<p>「ChatGPTに聞いたら、こう言ってました！」みたいな言葉を聞く機会がめちゃくちゃ増えた昨今でございます。というか、私のところにも、たまに「ChatGPTに聞いたらそう言ってましたから、鈴木さんのあの記事は間違ってます！」とか言われて、めんどいなーと思うことがあったりして。</p>
+<p>&nbsp;</p>
+
+<p>まぁ、AIは便利なんでこう思っちゃうのも当然ですが、ここで怖いのは「AIって間違うからねー」ってことではなくて、本当に怖いのは、</p>
+<p>&nbsp;</p>
+<ul>
+<li><strong>間違っているのに、めちゃくちゃ正しそうに見える！</strong></li>
+</ul>
+<p>&nbsp;</p>
+<p>ことのほうであります。AIは文章をなめらかに書くのが得意だし、論理的っぽく説明するのも上手いし、専門家っぽい口調で断言することも臆さないので、こちらが油断すると「もっともらしい＝正しいな！」みたいに判断しちゃうんですよ。</p>
+<p>&nbsp;</p>
+<p>言わずもがな、これはめっちゃ危ない状態なので、ケンタウロス思考においては「AIの答えをそのまま採用しない」って態度を取るのが基本になります。AIを「答えを出すマシン」として扱うのではなく、<strong>検査すべき素材を出してくれるチームメンバー</strong>として扱うのが、めっちゃ大事なんですよ。</p>
+<p>&nbsp;</p>
+<p>ということで、今回のテーマは「<strong>AIの答えを信じず検査する</strong>」になります。ここで必要になるのは<strong><span style="color: rgb(255, 255, 0);"><strong>批判的検証力</strong></span></strong>でして、これはAIの答えに対して、</p>
+<p>&nbsp;</p>
+<div>
+<ul>
+<li>この答えは本当に正しいのか？</li>
+<li>前提はズレていないか？</li>
+<li>根拠はあるのか？</li>
+<li>自分の目的に合っているのか？</li>
+<li>見落としている反対意見はないか？</li>
+</ul>
+</div>
+<p>&nbsp;</p>
+<p>みたいにチェックする能力のことです。シリーズの最初でも述べたとおり、人間とAIはそれぞれ違う弱点を持ってまして、AIは情報処理やパターン抽出に強い一方で、</p>
+<p>&nbsp;</p>
+<ul>
+<li>前提条件を疑うこと</li>
+<li>文脈を読むこと</li>
+<li>価値判断をすること</li>
+</ul>
+<p>&nbsp;</p>
+<p>には弱さがあったりします。逆に人間は、情報処理量ではAIにボロ負けするんだけど、文脈や意味づけ、最終判断にはまだ強みを持っております。だからこそ、AIが出したものを人間が検査するプロセスが重要になるわけですね。</p>
+<p>&nbsp;</p>
+<p>ここをサボると、ケンタウロス思考は一気に崩壊に向かいまして、せっかくAIに調べさせてアウトプットを出したのに、最後に「で、この答えは本当に使っていいのか？」を確認する作業を怠ったら、AIに思考を拡張してもらっているつもりが、ただAIのミスを自分のミスに移し替えてるだけになっちゃいますからね。</p>
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+<h1 id="f1096d32-63f8-43b9-ac4c-e9ece0aa78b4"><strong>まずはセルフチェックしてみよう！</strong></h1>
+<p>ということで、まずは自分のAI信頼度チェックをしてみましょう。以下の項目を読んで、自分に当てはまるかどうかを考えてみてください。</p>
+<p>&nbsp;</p>
+<div><input type="checkbox" value=""><span>&nbsp;</span>AIの答えが自然な日本語だと、つい正しいと思ってしまう</div>
+<div><input type="checkbox" value=""><span>&nbsp;</span>AIが自信満々に言っていると、あまり疑わずに使ってしまう</div>
+<div><input type="checkbox" value=""><span>&nbsp;</span>AIが出した情報の出典を確認しないことが多い</div>
+<div><input type="checkbox" value=""><span>&nbsp;</span>AIの答えを見て「なんか違う」と思っても、どこが違うか言語化できない</div>
+<div><input type="checkbox" value=""><span>&nbsp;</span>AIの出力をそのままコピペしたことがある</div>
+<div><input type="checkbox" value=""><span>&nbsp;</span>AIに反論させたり、弱点を探させたりする習慣がない</div>
+<div><input type="checkbox" value=""><span>&nbsp;</span>AIの答えが自分の考えと一致していると、安心して採用してしまう</div>
+<p>&nbsp;</p>
+<p>ここで3つ以上チェックがついた人は、かなり普通でして、というかほとんどの人がそうだと思います。</p>
+<p>&nbsp;</p>
+<p>なぜなら、AIの答えは「検査しにくい形」で出てくるのが普通でして、たとえばAIはこんな感じで答えてくることが多いでしょう。</p>
+<p>&nbsp;</p>
+<div>
+<blockquote>
+<p>この方法は、多くの研究で有効性が示されています。<br>特に、ストレス軽減、集中力向上、睡眠改善に効果があるとされています。<br>したがって、日常的に取り入れる価値があるでしょう。</p>
+</blockquote>
+</div>
+<p>&nbsp;</p>
+<p>一見、めっちゃまともに見えまして、気を抜いたら私だって鵜呑みにしちゃうわけです。ただし、ちょっと考えてみるとツッコミどころが大量にありまして、</p>
+<p>&nbsp;</p>
+<div>
+<ul>
+<li>「多くの研究」とはどの研究か？</li>
+<li>効果量はどれくらいか？</li>
+<li>どんな対象者に効いたのか？</li>
+<li>睡眠改善は主観評価か、客観指標か？</li>
+<li>逆効果になる人はいないのか？</li>
+<li>「取り入れる価値がある」と言えるほど実用的なのか？</li>
+</ul>
+</div>
+<p>&nbsp;</p>
+<p>みたいな疑問がわいてくるはずじゃないですか。このようなツッコミを入れられるかどうかが、今回のポイントになります。</p>
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+<h1 id="57344e08-e83d-4ccc-9d2c-4fccaa4f25e0"><strong>AIの答えを検査する5つの視点</strong></h1>
+<p>が、いきなり「AIにツッコミを入れろ」と言われても難しいんで、ツッコミ慣れするために、ここではいくつかのガイドラインを示しておきましょう。AIの出力をチェックするときは、まず以下の5つを見るようにしてくださいませ。</p>
+<p>&nbsp;</p>
+<ol>
+<li>根拠チェック</li>
+<li>前提チェック</li>
+<li>論理チェック</li>
+<li>文脈チェック</li>
+<li>反対意見チェック</li>
+</ol>
+<p>&nbsp;</p>
+<p>では、ひとつずつ見ていきましょうー。</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h1 id="2c00db8e-a305-472e-9466-c3f3aa967af9"><strong>視点1. 根拠チェック</strong></h1>
+<p>最初に見るべきは、<strong>根拠があるかどうか</strong>であります。AIは根拠があってもなくても同じぐらい自然な文章を書けますんで、ここが厄介なところっすね。</p>
+<p>&nbsp;</p>
+<p>たとえば、「朝に運動すると集中力が高まります！」という答えが出たとしましょう。これ自体は正しそうに見えますし、実際そこそこ正しいんですが、ここで鵜呑みにせずに検査するならこう聞く必要があります。</p>
+<p>&nbsp;</p>
+<div>
+<blockquote>
+<p>その主張の根拠は何ですか？<br>研究、統計、専門機関の見解、または具体的なメカニズムを分けて説明してください。</p>
+</blockquote>
+</div>
+<p>&nbsp;</p>
+<p>さらに厳密に見るなら、</p>
+<div>
+<p>&nbsp;</p>
+<blockquote>
+<p>この主張を支持する根拠の強さを、<br>A：メタ分析・システマティックレビュー<br>B：RCT<br>C：観察研究<br>D：専門家の意見<br>E：推測<br>に分けて評価してください。</p>
+</blockquote>
+</div>
+<p>&nbsp;</p>
+<p>と聞いてみるのがオススメであります。</p>
+<p>&nbsp;</p>
+<h3 id="b61a25d4-10e7-4520-ac8b-d79ac05e56ed">ワーク1：根拠を見つける</h3>
+<div>
+<p>ってことで、実際にワークです。以下に、あなたが最近AIから得た答えを1つ貼ってください。</p>
+<p>&nbsp;</p>
+<strong>AIの答え</strong>：
+<p>次に、その答えの中で「根拠が必要な主張」を3つ抜き出してください。</p>
+<p>&nbsp;</p>
+</div>
+<div><strong>根拠が必要な主張1</strong>：<span>&nbsp;</span><input type="text"><span>&nbsp;</span><strong>根拠が必要な主張2</strong>：<span>&nbsp;</span><input type="text"><span>&nbsp;</span><strong>根拠が必要な主張3</strong>：<input type="text">
+<p>&nbsp;</p>
+<p>最後に、それぞれについて確認します。</p>
+<p>&nbsp;</p>
+<p><strong>主張1の根拠</strong>：</p>
+<input type="checkbox" value=""><span>&nbsp;</span>明確にある<span>&nbsp;</span><input type="checkbox" value=""><span>&nbsp;</span>なんとなくある<span>&nbsp;</span><input type="checkbox" value=""><span>&nbsp;</span>ない<span>&nbsp;</span><input type="checkbox" value=""><span>&nbsp;</span>わからない
+<p><strong>主張2の根拠</strong>：</p>
+<input type="checkbox" value=""><span>&nbsp;</span>明確にある<span>&nbsp;</span><input type="checkbox" value=""><span>&nbsp;</span>なんとなくある<span>&nbsp;</span><input type="checkbox" value=""><span>&nbsp;</span>ない<span>&nbsp;</span><input type="checkbox" value=""><span>&nbsp;</span>わからない
+<p><strong>主張3の根拠</strong>：</p>
+<input type="checkbox" value=""><span>&nbsp;</span>明確にある<span>&nbsp;</span><input type="checkbox" value=""><span>&nbsp;</span>なんとなくある<span>&nbsp;</span><input type="checkbox" value=""><span>&nbsp;</span>ない<span>&nbsp;</span><input type="checkbox" value=""><span>&nbsp;</span>わからない</div>
+<p>&nbsp;</p>
+<p>ここで大事なのは、<strong>「もっともらしい」と「根拠がある」を分けること</strong>です。AIの答えに「研究では」「専門家によると」「一般的には」と書いてあっても、それだけでは根拠にならず、最低でも、</p>
+<p>&nbsp;</p>
+<div>
+<blockquote>
+<p>誰が<br>いつ<br>何を調べて<br>どんな結果が出て<br>どこまで言えるのか</p>
+</blockquote>
+</div>
+<p>&nbsp;</p>
+<p>が確認できるものなのだとお考えくださいませ。</p>
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<h1 id="16e3100e-56c6-4626-8961-479103b497e8"><strong>視点2. 前提チェック</strong></h1>
+<p>次に見るのは、<strong>前提がズレていないか</strong>です。AIの答えは、こちらの質問に対して正面から答えているように見えて、実は前提を勝手に補っていることがあるんですよ。たとえば、あなたが、</p>
+<p>&nbsp;</p>
+<div>
+<blockquote>
+<p>副業を始めるには何をすればいいですか？</p>
+</blockquote>
+</div>
+<p>&nbsp;</p>
+<p>と聞いたとします。すると、AIはこう答えるかもしれません。</p>
+<p>&nbsp;</p>
+<div>
+<blockquote>
+<p>まずはスキルを棚卸しし、クラウドソーシングサイトに登録し、ポートフォリオを作りましょう。</p>
+</blockquote>
+</div>
+<p>&nbsp;</p>
+<p>これは、確かに悪くない答えではありますが、よく考えると、この答えは以下の前提を勝手に置いていることがわかるはず。</p>
+<p>&nbsp;</p>
+<ul>
+<li>副業はオンラインで行う</li>
+<li>スキル販売型の副業をする</li>
+<li>本人にポートフォリオ化できる実績がある</li>
+<li>会社の副業規定に問題がない</li>
+<li>時間的余裕がある</li>
+</ul>
+<p>&nbsp;</p>
+<p>もし、相談者が「子育て中で時間がない」「会社の副業規定が厳しい」「人前に出る仕事のほうが得意」だったら、この答えはズレちゃうかもしれないじゃないですか。これは、AIの答えが間違っているというより、<strong>前提が合っていない</strong>わけです。</p>
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<h2 id="57c96dab-ff8f-4954-897b-11e552f14d4d"><strong><span style="text-decoration: underline;">ワーク2：隠れた前提をあぶり出す</span></strong></h2>
+<div>
+<ul>
+<li>あなたがAIに聞いた質問：</li>
+<li>AIの答えの要約：</li>
+</ul>
+</div>
+<div>
+<p>その答えが置いている前提を、最低３つ書いてください。</p>
+<p>&nbsp;</p>
+前提1：<span>&nbsp;</span><input type="text"><span>&nbsp;</span>前提2：<span>&nbsp;</span><input type="text"><span>&nbsp;</span>前提3：<span>&nbsp;</span><input type="text">
+<p>&nbsp;</p>
+<p>その上で、それぞれの前提が自分の状況に合っているかをチェックします。</p>
+<p>&nbsp;</p>
+<input type="checkbox" value=""><span>&nbsp;</span>前提1：合っている</div>
+<div><input type="checkbox" value=""><span>&nbsp;</span>前提1：ズレている</div>
+<div><input type="checkbox" value=""><span>&nbsp;</span>前提1：わからない</div>
+<div><input type="checkbox" value=""><span>&nbsp;</span>前提2：合っている</div>
+<div><input type="checkbox" value=""><span>&nbsp;</span>前提2：ズレている</div>
+<div><input type="checkbox" value=""><span>&nbsp;</span>前提2：わからない</div>
+<div><input type="checkbox" value=""><span>&nbsp;</span>前提3：合っている</div>
+<div><input type="checkbox" value=""><span>&nbsp;</span>前提3：ズレている</div>
+<div><input type="checkbox" value=""><span>&nbsp;</span>前提3：わからない</div>
+<p>&nbsp;</p>
+<p>でもって、最後にAIにこう聞いてみましょう。</p>
+<p>&nbsp;</p>
+<div>
+<blockquote>
+<p>あなたの回答が暗黙に置いている前提を10個挙げてください。<br>そのうえで、私の状況に合っていない可能性がある前提を指摘してください。</p>
+</blockquote>
+</div>
+<p>&nbsp;</p>
+<p>この質問はかなり便利です。AIの答えを検査するうえで、最初に投げる定番プロンプトにしてもいいぐらいです。</p>
+
+<h2 id="ff126c9d-de66-4b03-9526-4ba31bc7134e">&nbsp;</h2>
+
+<h2 id="d2c74d33-a1bc-491c-9b54-1bc4d08f5418">&nbsp;</h2>
+<h1 id="9e7669b4-05d7-4d8f-9c45-88a66b546bf0"><strong>視点3. 論理チェック</strong></h1>
+<p>3つ目は、<strong>話が飛躍していないか</strong>をチェックします。何度も言ってますが、AIは文章をなめらかにつなげるのが得意なので、論理が飛んでいても、表面上はきれいな内容をアウトプットしてくるんですよね。たとえば、こんな文章があったとしましょう。</p>
+<div>
+<p>&nbsp;</p>
+<blockquote>
+<p>読書をする人は語彙力が高い。<br>語彙力が高い人は仕事で成功しやすい。<br>したがって、読書をすれば仕事で成功できる。</p>
+</blockquote>
+</div>
+<p>&nbsp;</p>
+<p>一見、流れは自然なんだけど、よく見るとやはり飛躍がありまして、</p>
+<p>&nbsp;</p>
+<ul>
+<li>読書する人は、もともと教育水準が高いだけでは？</li>
+<li>語彙力と仕事の成功は相関であって因果ではないのでは？</li>
+<li>どんな読書でもいいのか？</li>
+<li>成功とは何を意味するのか？</li>
+</ul>
+<p>&nbsp;</p>
+<p>みたいなことがわかるわけです。AIってのは、こういう「なめらかな飛躍」をよくやるんですよ。</p>
+<p>&nbsp;</p>
+<p>なので、論理チェックでは以下を見るようにしてください。</p>
+<p>&nbsp;</p>
+<ul>
+<li>原因と結果を取り違えていないか？</li>
+<li>相関を因果とみなしていないか？</li>
+<li>一部の例を一般化していないか？</li>
+<li>例外を無視していないか？</li>
+<li>結論が強すぎないか？</li>
+</ul>
+
+<p>&nbsp;</p>
+<p>ということで、以下のワークです。</p>
+<p>&nbsp;</p>
+
+<h2 id="16e7dcc0-c708-427f-982e-4f493d99372a"><strong><span style="text-decoration: underline;">ワーク3：論理の飛躍を探す</span></strong></h2>
+<div>AIの結論：</div>
+<div>
+<p>&nbsp;</p>
+<p>上記の結論に至るまでの論理を、3ステップに分解してください。</p>
+<p>&nbsp;</p>
+</div>
+<div>ステップ1：<span>&nbsp;</span><input type="text"><span>&nbsp;</span>ステップ2：<span>&nbsp;</span><input type="text"><span>&nbsp;</span>ステップ3：<span>&nbsp;</span><input type="text">
+<p>&nbsp;</p>
+<p>次に、以下をチェックします。</p>
+<p>&nbsp;</p>
+<input type="checkbox" value=""><span>&nbsp;</span>相関を因果とみなしていないか？</div>
+<div><input type="checkbox" value=""><span>&nbsp;</span>一部の事例を一般化していないか？</div>
+<div><input type="checkbox" value=""><span>&nbsp;</span>反対の可能性を無視していないか？</div>
+<div><input type="checkbox" value=""><span>&nbsp;</span>結論が強すぎないか？</div>
+<div><input type="checkbox" value=""><span>&nbsp;</span>「人による」「状況による」を無視していないか？</div>
+<p>&nbsp;</p>
+<p>1つでもチェックがついたら、そのAI出力はそのまま使わないほうがいいでしょう。その場合は、AIにこう聞いてください。</p>
+<p>&nbsp;</p>
+<div>
+<blockquote>
+<p>いまの回答について、論理の飛躍がある箇所を指摘してください。<br>特に、相関と因果の混同、過剰一般化、結論の強すぎる部分をチェックしてください。</p>
+</blockquote>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+</div>
+<h1 id="c1e4277c-5db6-4e65-98d2-fdcfdc625a22"><strong>視点4. 文脈チェック</strong></h1>
+<p>4つ目は、<strong>自分の目的や状況に合っているか</strong>であります。AIの答えは、一般論としては正しくても、今の文脈には合わないことがありまして、たとえば、</p>
+<p>&nbsp;</p>
+<div>
+<ul>
+<li>健康のためには毎日運動しましょう。</li>
+</ul>
+</div>
+<p>&nbsp;</p>
+<p>ってのは一般論としては正しいんだけど、もしあなたが、</p>
+<p>&nbsp;</p>
+<ul>
+<li>睡眠不足</li>
+<li>仕事で疲弊</li>
+<li>ケガをしている</li>
+<li>運動嫌い</li>
+<li>育児中で時間がない</li>
+</ul>
+<p>&nbsp;</p>
+<p>って状態だったら、「毎日運動しましょう」を実践したらアレなことになりますんで。AIの答えは、だいたい<strong>平均的な人間</strong>に向けて出されますんで、<strong>この状況の、この人にとって使える答え</strong>を考えてもらう必要があるんですよね。ということで、以下のワークをお試しください。</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2 id="62eb4199-ecf5-4de4-94c7-d085b7c4f214"><strong><span style="text-decoration: underline;">ワーク4：文脈に合っているかを見る</span></strong></h2>
+<div>まずは、この答えを何に使いたいのか？を考えましょう。</div>
+<div>&nbsp;</div>
+<div>
+<ul>
+<li>誰に向けたものか：<span>&nbsp;</span><input type="text"></li>
+<li>どんな場面で使うのか：<span>&nbsp;</span><input type="text"></li>
+<li>時間・お金・体力などの制約：<span>&nbsp;</span><input type="text"></li>
+<li>絶対に避けたいこと：<span>&nbsp;</span><input type="text"></li>
+</ul>
+</div>
+<div>
+<p>&nbsp;</p>
+<p>次に、AIの答えがその文脈に合っているかをチェックします。</p>
+<p>&nbsp;</p>
+<input type="checkbox" value=""><span>&nbsp;</span>読者・相手に合っている</div>
+<div><input type="checkbox" value=""><span>&nbsp;</span>現実的に実行できる</div>
+<div><input type="checkbox" value=""><span>&nbsp;</span>制約を考慮している</div>
+<div><input type="checkbox" value=""><span>&nbsp;</span>言い方が場面に合っている</div>
+<div><input type="checkbox" value=""><span>&nbsp;</span>自分が大事にしたい価値と矛盾していない</div>
+<p>&nbsp;</p>
+<p>ここでチェックが少なかった場合は、AIにこう聞きましょう。</p>
+<p>&nbsp;</p>
+<div>
+<blockquote>
+<p>この回答を、以下の文脈に合わせて再評価してください。<br><br>目的：＿＿＿＿＿＿<br>相手：＿＿＿＿＿＿<br>制約：＿＿＿＿＿＿<br>避けたいこと：＿＿＿＿＿＿<br><br>そのうえで、この回答のどこがズレているかを指摘してください。</p>
+</blockquote>
+</div>
+<p>&nbsp;</p>
+<p>文脈チェックは人間の得意領域。AIは大量の情報を扱えるんだけど、「この場で、この相手に、この言い方をしていいか？」という判断は、まだ人間が担うべき部分なんで、ここはぜひやっときましょう。</p>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+<h1 id="8bd14fe7-9fce-47d5-8c6d-e377db9c6233"><strong>視点5. 反対意見チェック</strong></h1>
+<p>最後は、<strong>反対意見を無視していないか</strong>です。AIの答えって、こちらの聞き方に合わせて、きれいに片側の論理を作ってくることがあるじゃないですか。たとえば、</p>
+<p>&nbsp;</p>
+<div>
+<ul>
+<li>朝型生活のメリットを教えて！</li>
+</ul>
+</div>
+<p>&nbsp;</p>
+<p>と聞けば、朝型のメリットをたくさん出してくれるし、逆に、</p>
+<div>
+<p>&nbsp;</p>
+<ul>
+<li>朝型生活のデメリットを教えて！</li>
+</ul>
+</div>
+<p>&nbsp;</p>
+<p>と聞けば、デメリットも出してくれるわけです。つまり、AIの回答ってのは、かなり「聞かれた方向」に寄るわけです。だからこそ、最初の答えだけで満足してはいけないんですな。そこで、以下のワークであります。</p>
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<h2 id="425262e0-8edc-4260-aa00-542ba1431340"><strong><span style="text-decoration: underline;">ワーク5：反対側から見る</span></strong></h2>
+<div>
+<ul>
+<li>AIの答えの中心的な主張：</li>
+</ul>
+<p>&nbsp;</p>
+<p>上記の主張に反対する立場を3つ作ってください。</p>
+<p>&nbsp;</p>
+<ul>
+<li>反対意見1：<span>&nbsp;</span><input type="text"><span>&nbsp;</span>反対意見2：<span>&nbsp;</span><input type="text"><span>&nbsp;</span>反対意見3：<span>&nbsp;</span><input type="text"></li>
+</ul>
+</div>
+<p>&nbsp;</p>
+<p>次に、AIにこう聞きます。</p>
+<p>&nbsp;</p>
+<div>
+<blockquote>
+<p>あなたの先ほどの回答に対して、最も強い反論を3つ挙げてください。<br>それぞれについて、その反論がどの程度重要かを評価してください。</p>
+</blockquote>
+</div>
+<p>&nbsp;</p>
+<p>さらに余裕があれば、こう聞きます。</p>
+<div>
+<p>&nbsp;</p>
+<blockquote>
+<p>この回答を採用すると失敗するケースを5つ挙げてください。</p>
+</blockquote>
+</div>
+<p>&nbsp;</p>
+<p>これがかなり効きまして、良い答えを得たいなら、AIに「正解」を出させるだけでなく、<strong>自分の答えを壊させる</strong>必要があるのだとお考えください。</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h1 id="c00f7ce4-1571-4c7e-bade-863099070d16"><strong>実践：AI出力の検査シート</strong></h1>
+<p>ってことで、以下にすべてのワークをまとめておきますんで、上記を読んでポイントを理解したら、以下をそのまま埋めてください（AIの答えを受け取ったら）。</p>
+<p>&nbsp;</p>
+
+<h3 id="fabdb9aa-bd81-4d1e-9cf3-b0ce5a6ed972">AI出力検査シート</h3>
+1. AIに聞いた質問
+2. AIの答えの要約
+3. この答えの中心主張
+<h4>&nbsp;</h4>
+<h4>4. 根拠チェック</h4>
+根拠が必要な主張1：<span>&nbsp;</span><input type="text"><span>&nbsp;</span>根拠が必要な主張2：<span>&nbsp;</span><input type="text"><span>&nbsp;</span>根拠が必要な主張3：<input type="text">
+<p>それぞれの根拠は明確か？</p>
+<input type="checkbox" value=""><span>&nbsp;</span>主張1：明確<span>&nbsp;</span><input type="checkbox" value=""><span>&nbsp;</span>主張1：弱い<span>&nbsp;</span><input type="checkbox" value=""><span>&nbsp;</span>主張1：不明
+<input type="checkbox" value=""><span>&nbsp;</span>主張2：明確<span>&nbsp;</span><input type="checkbox" value=""><span>&nbsp;</span>主張2：弱い<span>&nbsp;</span><input type="checkbox" value=""><span>&nbsp;</span>主張2：不明
+<input type="checkbox" value=""><span>&nbsp;</span>主張3：明確<span>&nbsp;</span><input type="checkbox" value=""><span>&nbsp;</span>主張3：弱い<span>&nbsp;</span><input type="checkbox" value=""><span>&nbsp;</span>主張3：不明
+
+<h4>&nbsp;</h4>
+<h4>5. 前提チェック</h4>
+この答えが置いている前提1：<span>&nbsp;</span><input type="text">
+この答えが置いている前提2：<span>&nbsp;</span><input type="text">
+この答えが置いている前提3：<span>&nbsp;</span><input type="text">
+&nbsp;自分の状況に合っていない前提：
+
+<h4>&nbsp;</h4>
+<h4>6. 論理チェック</h4>
+<input type="checkbox" value=""><span>&nbsp;</span>相関を因果とみなしている
+<input type="checkbox" value=""><span>&nbsp;</span>一部の例を一般化している
+<input type="checkbox" value=""><span>&nbsp;</span>結論が強すぎる
+<input type="checkbox" value=""><span>&nbsp;</span>反対の可能性を無視している
+<input type="checkbox" value=""><span>&nbsp;</span>話が途中で飛んでいる
+<input type="checkbox" value=""><span>&nbsp;</span>特に問題はなさそう
+
+<h4>&nbsp;</h4>
+<h4>7. 文脈チェック</h4>
+<p>この答えは、自分の目的に合っているか？</p>
+<input type="checkbox" value=""><span>&nbsp;</span>合っている<span>&nbsp;</span><input type="checkbox" value=""><span>&nbsp;</span>少しズレている<span>&nbsp;</span><input type="checkbox" value=""><span>&nbsp;</span>かなりズレている<span> </span>ズレている部分：
+
+<h4>&nbsp;</h4>
+<h4>8. 反対意見チェック</h4>
+この答えへの強い反論1：<span>&nbsp;</span><input type="text">
+この答えへの強い反論2：<span>&nbsp;</span><input type="text">
+この答えへの強い反論3：<span>&nbsp;</span><input type="text">
+<h4>&nbsp;</h4>
+<h4>9. そのまま使うと危ない点</h4>
+<h4>&nbsp;</h4>
+<h4>10. 自分の最終判断</h4>
+<input type="checkbox" value=""><span>&nbsp;</span>そのまま使う
+<input type="checkbox" value=""><span>&nbsp;</span>一部だけ使う
+<input type="checkbox" value=""><span>&nbsp;</span>修正して使う
+<input type="checkbox" value=""><span>&nbsp;</span>使わない<span> </span>理由：
+
+
+
+
+<h2 id="cc63bf37-ad54-4a1e-8cd9-d7772f6be604">検査用プロンプト集</h2>
+<p>でもって、毎回ゼロから考えるのは面倒なので、以下のプロンプトを使ってみてください。</p>
+<p>&nbsp;</p>
+<h3 id="1128bfd7-ff07-4e74-be14-9f87ab1a58aa">プロンプト1：根拠を確認する</h3>
+<div>
+<blockquote>
+<p>この回答の中で、根拠が必要な主張をすべて抜き出してください。<br>それぞれについて、根拠の種類を以下に分類してください。<br><br>A：メタ分析・システマティックレビュー<br>B：RCT<br>C：観察研究<br>D：公的機関・専門機関の見解<br>E：専門家の意見<br>F：推測<br>G：根拠不明<br><br>最後に、根拠が弱い主張をリストアップしてください。</p>
+</blockquote>
+</div>
+<h3 id="96d3fece-aff9-4e4d-9800-b1b18e5f0ab5">&nbsp;</h3>
+<h3 id="19c5a185-935b-4dfe-ac71-b9b7bb697c50">プロンプト2：前提をあぶり出す</h3>
+<div>
+<blockquote>
+<p>あなたの回答が暗黙に置いている前提を10個挙げてください。<br>そのうえで、その前提が崩れた場合に結論がどう変わるかを説明してください。</p>
+</blockquote>
+</div>
+<h3 id="eacea0bf-2b8c-4902-b5be-44761a084c74">&nbsp;</h3>
+<h3 id="30160611-9758-4c24-87f4-0ff23ee843e3">プロンプト3：論理の飛躍を探す</h3>
+<div>
+<blockquote>
+<p>この回答について、論理の飛躍をチェックしてください。<br><br>特に、<br>・相関と因果の混同<br>・過剰一般化<br>・結論の強すぎる表現<br>・反対事例の無視<br>・前提と結論のズレ<br>を重点的に見てください。</p>
+</blockquote>
+</div>
+<h3 id="8c38ef27-46dc-490b-9bad-5daa23402cdd">&nbsp;</h3>
+<h3 id="0ba20212-9bbf-4521-9e68-3e8aa5445459">プロンプト4：文脈に合っているか確認する</h3>
+<div>
+<blockquote>
+<p>この回答を、以下の文脈に照らして再評価してください。<br><br>目的：＿＿＿＿＿＿<br>相手：＿＿＿＿＿＿<br>制約：＿＿＿＿＿＿<br>避けたいこと：＿＿＿＿＿＿<br><br>そのうえで、回答のどこが使えるか、どこがズレているかを分けてください。</p>
+</blockquote>
+</div>
+<h3 id="189da14d-0912-497d-9511-a8fa8272d26e">&nbsp;</h3>
+<h3 id="6b8c4cb3-7a2b-4edf-a624-54e11adcd5e2">プロンプト5：最強の反論を出す</h3>
+<div>
+<blockquote>
+<p>この回答に対して、最も強い反論を3つ出してください。<br>単なる揚げ足取りではなく、この回答を採用すると失敗しうる重大なポイントに絞ってください。</p>
+</blockquote>
+</div>
+<h3 id="d533d148-b717-4602-b947-ed9b3e906989">&nbsp;</h3>
+<h3 id="8595d3c5-7126-498f-924b-024af6d762dc">プロンプト6：採用判断をする</h3>
+<div>
+<blockquote>
+<p>ここまでの検査を踏まえて、この回答を<br><br>1. そのまま使える<br>2. 一部修正すれば使える<br>3. 参考程度にとどめる<br>4. 使わないほうがいい<br><br>の4段階で評価してください。<br>その理由も説明してください。</p>
+</blockquote>
+</div>
+<h2 id="117b4814-2dc5-4ceb-8620-6a81255d673a">&nbsp;</h2>
+<h2 id="a7959d11-7537-41d5-b417-d58d1412a602">&nbsp;</h2>
+<h1 id="0a5affe7-cd97-44fb-a8d5-9691309d9d45"><strong>まとめ</strong></h1>
+<p>ってことで、今回はAIの答えをチェックしよう！って話でした。AIの答えってのは、基本的に人間が検査して、使える部分だけ採用し、最後に自分で判断するって流れがマスト。AIの答えは完成品じゃないので、あくまで<strong>検査前の素材</strong>ぐらいにお考えください。これができると、AIはかなり強力な思考パートナーになりますんで。</p>
+<p>&nbsp;</p>
+<p>なので、次にAIを使うときは、答えをもらって終わりにせず、最低でも最後にこの一文を追加してみてください。</p>
+<p>&nbsp;</p>
+<div>
+<blockquote>
+<p>いまの回答をそのまま信じると危ない点を、5つ指摘してください。</p>
+</blockquote>
+</div>
+<p>&nbsp;</p>
+<p>これだけでも、AIとの付き合い方は変わると思いますんでー。</p>
+<p>&nbsp;</p>

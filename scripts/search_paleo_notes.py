@@ -26,6 +26,7 @@ class SearchResult:
     snippet: str
     note_kind: str
     reliability: str
+    completeness: str
 
 
 def parse_args() -> argparse.Namespace:
@@ -41,6 +42,11 @@ def parse_args() -> argparse.Namespace:
         choices=["all", "articles", "video-chapters"],
         default="all",
         help="Source notes to search. Video chapters are non-verbatim reference summaries.",
+    )
+    parser.add_argument(
+        "--include-incomplete",
+        action="store_true",
+        help="Include partial or pending article exports in results.",
     )
     parser.add_argument("--root", default=".", help="Paleo Channel repository root.")
     return parser.parse_args()
@@ -71,11 +77,27 @@ def load_manifest(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(handle))
 
 
-def load_sources(root: Path, source: str) -> list[tuple[str, dict[str, str]]]:
+def article_is_complete(row: dict[str, str]) -> bool:
+    status = (row.get("collection_status") or "").strip()
+    if status:
+        return status == "full"
+    return (
+        (row.get("content_source") or "").strip() == "Dラボ認証済み本文"
+        and (row.get("content_completeness") or "").strip() == "full"
+    )
+
+
+def load_sources(
+    root: Path,
+    source: str,
+    include_incomplete: bool = False,
+) -> list[tuple[str, dict[str, str]]]:
     rows: list[tuple[str, dict[str, str]]] = []
     if source in {"all", "articles"}:
         article_manifest = root / "export_state" / "manifest.csv"
-        rows.extend(("article", row) for row in load_manifest(article_manifest))
+        for row in load_manifest(article_manifest):
+            if include_incomplete or article_is_complete(row):
+                rows.append(("article", row))
     if source in {"all", "video-chapters"}:
         video_manifest = root / "export_state" / "video_chapters_manifest.csv"
         if video_manifest.exists():
@@ -151,8 +173,9 @@ def search(
     from_date: datetime | None,
     to_date: datetime | None,
     source: str = "all",
+    include_incomplete: bool = False,
 ) -> list[SearchResult]:
-    rows = load_sources(root, source)
+    rows = load_sources(root, source, include_incomplete=include_incomplete)
     results: list[SearchResult] = []
     for note_kind, row in rows:
         if note_kind == "article":
@@ -191,6 +214,7 @@ def search(
                     if note_kind == "video_chapter"
                     else "article"
                 ),
+                completeness=(row.get("collection_status") or "full").strip() or "full",
             )
         )
     results.sort(key=lambda item: (item.score, item.date), reverse=True)
@@ -203,7 +227,12 @@ def print_results(results: list[SearchResult]) -> None:
         return
     for idx, item in enumerate(results, 1):
         date = item.date.strftime("%Y-%m-%d") if item.date != datetime.min else "unknown-date"
-        source_label = "動画チャプター・参考／非逐語" if item.note_kind == "video_chapter" else "記事"
+        if item.note_kind == "video_chapter":
+            source_label = "動画チャプター・参考／非逐語"
+        elif item.completeness != "full":
+            source_label = "記事・不完全"
+        else:
+            source_label = "記事"
         print(f"{idx}. [{date}] [{source_label}] score={item.score:.1f} {item.title}")
         print(f"   url: {item.url}")
         print(f"   file: {item.file}")
@@ -220,7 +249,15 @@ def main() -> int:
     if not terms:
         print("At least one search term is required.", file=sys.stderr)
         return 2
-    results = search(root, terms, max(args.limit, 1), from_date, to_date, args.source)
+    results = search(
+        root,
+        terms,
+        max(args.limit, 1),
+        from_date,
+        to_date,
+        args.source,
+        include_incomplete=args.include_incomplete,
+    )
     print_results(results)
     return 0
 

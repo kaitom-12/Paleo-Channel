@@ -1,10 +1,18 @@
 {
-  "records": 8736,
-  "created": 1448,
+  "records": 1448,
+  "fetched_records": 1448,
+  "created": 0,
+  "incomplete_created": 0,
   "skipped": 7288,
   "errors": 0,
-  "authenticated_bodies": 311,
+  "full": 1448,
+  "asset_failed": 0,
+  "partial": 0,
+  "pending": 0,
+  "failed": 0,
+  "authenticated_bodies": 1448,
   "manifest": "export_state\\manifest.csv",
   "skipped_file": "export_state\\skipped.csv",
-  "updated_at": "2026-08-09T21:28:39.435218+09:00"
+  "failures_file": "export_state\\collection_failures.csv",
+  "updated_at": "2026-09-05T21:49:48.204456+09:00"
 }

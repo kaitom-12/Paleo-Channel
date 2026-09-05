@@ -10,13 +10,14 @@ source_type: "Dラボ内記事"
 thumbnail_url: "https://firebasestorage.googleapis.com/v0/b/daigovideoapp-d658e.appspot.com/o/blogs%2Fpaleo%2F2221037%2Fc38179a1006a9d1b2800f360391e31d0bf15f052.png.png?alt=media&token=0b2331a6-8de5-41e3-bfbe-5964c7431fb6"
 content_source: "Dラボ認証済み本文"
 content_completeness: "full"
+collection_status: "full"
+asset_status: "complete"
+raw_html_file: "articles\\raw_html\\2221037.html"
 ---
 
 # たった45分で「親友っぽく」なれる心理学の裏ワザ：Fast Friendsパラダイム入門
 
-![記事サムネイル](https://firebasestorage.googleapis.com/v0/b/daigovideoapp-d658e.appspot.com/o/blogs%2Fpaleo%2F2221037%2Fc38179a1006a9d1b2800f360391e31d0bf15f052.png.png?alt=media&token=0b2331a6-8de5-41e3-bfbe-5964c7431fb6)
-
-![c38179a1006a9d1b2800f360391e31d0bf15f052.png](https://firebasestorage.googleapis.com/v0/b/daigovideoapp-d658e.appspot.com/o/blogs%2Fpaleo%2F2221037%2F1_c38179a1006a9d1b2800f360391e31d0bf15f052.png.png?alt=media&token=ba3fe76d-6135-48ca-bd1a-02477cffde3b)
+![c38179a1006a9d1b2800f360391e31d0bf15f052.png](assets/2221037/000.png)
 
 「パレオな男」をお読みの方なら、「[誰とでも最速で親密な関係になれる３６の質問](https://yuchrszk.blogspot.com/2015/01/blog-post_86.html)」をご存じでしょう。ニューヨーク州立大のアーサー・アーロン博士が開発した質問集で、こいつを使った実験では、初めて知り合った男女が、たった45分で“親友っぽく”なれたというから驚きであります。人間関係を深めるのには時間がかかりまして、会社の同僚とようやく打ち解けるのに半年……なんてことも珍しくないですからね。
 
